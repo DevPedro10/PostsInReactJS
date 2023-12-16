@@ -1,0 +1,16 @@
+.btnLoadMorePosts {
+    display: block;
+    margin: 20px auto;
+    cursor: pointer;
+    width: 150px;
+    height: 40px;
+    outline: none;
+    border: 1px solid black;
+    background: white;
+    color: black;
+    transition: .2s ease-in-out;
+}
+
+.btnLoadMorePosts:hover {
+    background: transparent;
+}
