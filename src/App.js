@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useCallback, useEffect, useState } from 'react';
 
 import './App.css'
 
@@ -7,79 +7,73 @@ import { Posts } from './components/Posts';
 import { Button } from './components/Button';
 import { CampoDeTexto } from './components/CampoDeTexto';
 
-class App extends Component {
-  state = {
-    posts: [],
-    postsAndPhotos: [],
-    page: 0,
-    postsPerPage: 2,
-    searchValue: ''
-  }
+const App = () => {
+  const [posts, setPosts] = useState([]);
+  const [postsAndPhotos] = useState([]);
+  const [page, setPage] = useState(0);
+  const [postsPerPage, setPostsPerPage] = useState(2);
+  const [searchValue, setSearchValue] = useState('');
+  const [allPosts, setAllPosts] = useState([])
 
-  async componentDidMount() {
-    const { posts, postsPerPage } = this.state;
+  const filteredPosts = !!searchValue ? allPosts.filter(post => {
+    return post.title.toLowerCase().includes(searchValue.toLowerCase());
+  }) : allPosts
+
+
+  const handleLoadPosts = useCallback(async (page, postsPerPage) => {
     const postsAndPhotos = await loadPosts();
-    this.setState({
-      posts: postsAndPhotos.slice(posts, postsPerPage),
-      allPosts: postsAndPhotos
-    })
-  }
 
-  loadMorePosts = () => {
-    const { page, postsPerPage, allPosts, posts } = this.state;
+    setPosts(postsAndPhotos.slice(posts, postsPerPage))
+    setAllPosts(postsAndPhotos)
+  }, [])
 
+
+  useEffect(() => {
+    handleLoadPosts(0, postsPerPage)
+  }, [handleLoadPosts, postsPerPage])
+
+  const loadMorePosts = () => {
     const nextPage = page + postsPerPage;
     const nextPosts = allPosts.slice(nextPage, nextPage + postsPerPage)
     posts.push(...nextPosts);
-    this.setState({ posts, page: nextPage })
-  }
-  handleChange = (e) => {
-    const { searchValue } = this.state
-    console.log(searchValue)
-    this.setState({ searchValue: e.target.value })
+
+    setPosts(posts)
+    setPage(nextPage)
   }
 
-  render() {
-    const { posts, searchValue, allPosts } = this.state;
-
-    const filteredPosts = !!searchValue ? allPosts.filter(post => {
-      return post.title.toLowerCase().includes(searchValue.toLowerCase());
-    }) : allPosts
-
-
-
-    return (
-      <div className='container'>
-        <header>
-          <CampoDeTexto
-            onChange={this.handleChange}
-            className='inputText'
-            tooltip='Procure artigos'
-          />
-
-        </header>
-
-
-        {!!searchValue ? (
-          <div className='filteredPosts'>
-            <Posts posts={filteredPosts} />
-          </div>
-        ) : (
-          <Posts posts={posts} />
-        )}
-
-        {
-          searchValue.length <= 0 && (
-            <Button
-              title={"Carregar novos posts"}
-              onClick={this.loadMorePosts}
-              className={"btnLoadMorePosts"}
-            />
-          )
-        }
-      </div >
-    )
+  const handleChange = (e) => {
+    setSearchValue(e.target.value)
   }
+  return (
+    <div className='container'>
+      <header>
+        <CampoDeTexto
+          onChange={handleChange}
+          className='inputText'
+          tooltip='Procure artigos'
+        />
+      </header>
+
+
+      {!!searchValue ? (
+        <div className='filteredPosts'>
+          <Posts posts={filteredPosts} />
+        </div>
+      ) : (
+        <Posts posts={posts} />
+      )}
+
+      {searchValue.length <= 0 && (
+        <Button
+          id="buttonLoadMorePosts"
+          title={"Carregar novos posts"}
+          onClick={loadMorePosts}
+          className={"btnLoadMorePosts"}
+        />
+      )}
+    </div >
+  )
 }
+
 
 export default App;
