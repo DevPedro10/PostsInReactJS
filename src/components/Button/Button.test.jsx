@@ -28,6 +28,4 @@ describe("<Button/> Component Test", () => {
         expect(screen.getByRole('button', { id: "buttonLoadMorePosts" })).not.toBeDisabled();
     })
 
-
-
 });
